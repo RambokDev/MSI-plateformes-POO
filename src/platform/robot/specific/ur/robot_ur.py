@@ -6,49 +6,74 @@ import rospy
 from ur_dashboard_msgs.srv import GetRobotMode
 from std_srvs.srv import Trigger
 
-from src.platform.robot.specific.ur.commands.RobotUR_ROS import RobotUR_ROS
+from src.platform.robot.specific.ur.commands.robot_ur_ros import RobotUR_ROS
 
 
-class RobotUR():
+class RobotUR(RobotUR_ROS):
 
     def __init__(self):
         super().__init__()
 
-    def cartesian_trajectory(self, robot, command, move, tool_position):
-        robot.switch_controler_robot("pose_based_cartesian_traj_controller")
+    def connexion_state(self, state: bool):
+        """
+        This function allow you to connect or disconnect the robot
+        Example : True the robot is connected
+        @param: state       a bool
+        """
+        if state:
+            service = "play"
+        else:
+            service = "stop"
+
+        rospy.wait_for_service('/ur_hardware_interface/dashboard/{}'.format(service))
+        robot_connexion_state = rospy.ServiceProxy('/ur_hardware_interface/dashboard/{}'.format(service), Trigger)
+
+        try:
+            resp = robot_connexion_state()
+            if resp.success:
+                time.sleep(5)
+                rospy.init_node("robotUR", disable_signals=True)
+            return resp.success, resp.message
+        except rospy.ServiceException as exc:
+            print("Service did not process request: " + str(exc))
+            return False, "Error", None
+
+    def cartesian_trajectory(self, command, move, tool_position):
+        self.switch_controler_robot("pose_based_cartesian_traj_controller")
 
         if command == 'initial_position':
             duration = 5
-            success, message = robot.go_to_initial_position(duration)
+            success, message = self.go_to_initial_position(duration)
             return success, message
         elif type(command) == list:
             if move == 'relative':
-                success, message = robot.relative_move(command[0], command[1], command[2])
+                success, message = self.relative_move(command[0], command[1], command[2])
                 return success, message
             else:
                 if tool_position == 'horizontal':
-                    success, message = robot.go_to_pose(geometry_msgs.Pose(
+                    success, message = self.go_to_pose(geometry_msgs.Pose(
                         geometry_msgs.Vector3(command[0], command[1], command[2]),
-                        robot.tool_horizontal_pose_camera
+                        self.tool_horizontal_pose_camera
                     ))
                     return success, message
                 elif tool_position == 'down':
-                    success, message = robot.go_to_pose(geometry_msgs.Pose(
+                    success, message = self.go_to_pose(geometry_msgs.Pose(
                         geometry_msgs.Vector3(command[0], command[1], command[2]),
-                        robot.tool_down_pose
+                        self.tool_down_pose
                     ))
                     return success, message
                 else:
-                    success, message = robot.go_to_pose(geometry_msgs.Pose(
+                    success, message = self.go_to_pose(geometry_msgs.Pose(
                         geometry_msgs.Vector3(command[0], command[1], command[2]),
                         tool_position
                     ))
                     return success, message
 
-    def articular_trajectory(self, robot, command):
+    def articular_trajectory(self, command):
+        print(type(command))
         if type(command) == list:
-            robot.switch_controler_robot("pos_joint_traj_controller")
-            success, message = robot.send_joint_trajectory(robot.convert_deg_to_rad(command))
+            self.switch_controler_robot("pos_joint_traj_controller")
+            success, message = self.send_joint_trajectory(self.convert_deg_to_rad(command))
             return success, message
 
     def robot_get_info(self, info_type, robot):
@@ -99,32 +124,6 @@ class RobotUR():
         except rospy.ServiceException as exc:
             print("Service did not process request: " + str(exc))
             return False, "Error"
-
-    def connexion_state(self, state: bool):
-        """
-        This function allow you to connect or disconnect the robot
-        Example : True the robot is connected
-        @param: state       a bool
-        """
-        robot = None
-        if state == True:
-            service = "play"
-        elif state == False:
-            service = "stop"
-        rospy.wait_for_service('/ur_hardware_interface/dashboard/{}'.format(service))
-        robot_connexion_state = rospy.ServiceProxy('/ur_hardware_interface/dashboard/{}'.format(service),
-                                                   Trigger)
-
-        try:
-            resp = robot_connexion_state()
-            if resp.success:
-                time.sleep(5)
-                rospy.init_node("robotUR", disable_signals=True)
-                robot = RobotUR_ROS()
-            return resp.success, resp.message, robot
-        except rospy.ServiceException as exc:
-            print("Service did not process request: " + str(exc))
-            return False, "Error", None
 
 
 if __name__ == '__main__':

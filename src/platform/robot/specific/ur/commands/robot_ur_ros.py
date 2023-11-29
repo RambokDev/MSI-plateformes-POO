@@ -40,19 +40,23 @@ class RobotUR_ROS(object):
     tool_horizontal_pose = geometry_msgs.Quaternion(0.5, 0.5, 0.5,
                                                     0.5)
     cartesian_controller = "pose_based_cartesian_traj_controller/follow_cartesian_trajectory"
+
     def __init__(self, initial_pose=geometry_msgs.Pose(geometry_msgs.Vector3(-0.731, 0.356, 0.357), tool_down_pose)):
-        super(RobotUR_ROS, self).__init__()
+        super().__init__()
+
         timeout = rospy.Duration(5)
         self.switch_srv = rospy.ServiceProxy("/controller_manager/switch_controller", SwitchController)
         self.load_srv = rospy.ServiceProxy("/controller_manager/load_controller", LoadController)
+
         try:
             self.switch_srv.wait_for_service(timeout.to_sec())
         except rospy.exceptions.ROSException as err:
             rospy.logerr("Could not reach controller switch service. Msg: {}".format(err))
             sys.exit(-1)
+
         if not self._search_for_controller("pose_based_cartesian_traj_controller"):
             self._switch_controller("pose_based_cartesian_traj_controller")
-        self.trajectory_client = actionlib.SimpleActionClient(RobotUR.cartesian_controller,
+        self.trajectory_client = actionlib.SimpleActionClient(self.cartesian_controller,
                                                               FollowCartesianTrajectoryAction)
         self.current_pose = None
         self.initial_pose = initial_pose  # Define an initial position
@@ -197,7 +201,6 @@ class RobotUR_ROS(object):
 
     def switch_controler_robot(self, target):
         self._switch_controller(target)
-
 
     def send_joint_trajectory(self, position):
         action_client = SimpleActionClient("/pos_joint_traj_controller/follow_joint_trajectory",

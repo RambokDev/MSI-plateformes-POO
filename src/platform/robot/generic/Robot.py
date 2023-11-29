@@ -1,16 +1,20 @@
 #!/usr/bin/python3
-from platform.robot.specific.ur.RobotUR import RobotUR
+import time
+import roslaunch
+from src.platform.robot.specific.ur.RobotUR import RobotUR
 
 
 class Robot(RobotUR):
 
     def __init__(self):
         super().__init__()
-        self.Robot_interface = RobotUR()
+        self.robot_ur = RobotUR
+        self.robot_interface = None
 
+    def trajectory(self):
+        print("traj")
 
-
-    def robot_connexion(state: bool):
+    def robot_connexion(self, state: bool):
         """This function allowed you to established the robot connexion
 
         :param state: boolean state, no default value
@@ -23,19 +27,18 @@ class Robot(RobotUR):
         """
         if state:
             print("======Start Robot Connexion======")
-            success, message = set_robot_state(True)
+            success, message = self.robot_ur.set_robot_state(True)
             if success:
                 while True:
-                    robot_state = get_robot_mode()
+                    robot_state = self.robot_ur.get_robot_mode()
                     if robot_state == 7:
                         print("=========Robot mode is {} ======== ".format(robot_state))
                         print("=========Start reverse connexion with the command interface===========")
 
-                        success, message, robot = connexion_state(True)
+                        success, message, robot = self.robot_ur.connexion_state(True)
                         if success:
                             print("=========You are actually connected===========")
-
-                            Platform().storeInterface(robot)
+                            self.robot_interface = robot
                             return success, message, robot
                         else:
                             return success, message, robot
@@ -43,17 +46,17 @@ class Robot(RobotUR):
                 return success, message, None
         else:
             print("========Start Stoping brakes please wait ======")
-            success, message = set_robot_state(False)
+            success, message = self.robot_ur.set_robot_state(False)
             if success:
                 while True:
-                    robot_state = get_robot_mode()
+                    robot_state = self.robot_ur.get_robot_mode()
                     if robot_state == 3:
                         print("=========Robot mode is {} ======== ".format(robot_state))
                         print("=========Stop reverse connexion with the command interface===========")
-                        success, message, robot = connexion_state(False)
+                        success, message, robot = self.robot_ur.connexion_state(False)
                         if success:
                             print("=========You are actually disconnected===========")
-
+                            self.robot_interface = None
                             return success, message
                         else:
                             return success, message
@@ -61,8 +64,7 @@ class Robot(RobotUR):
             else:
                 return success, message
 
-
-    def _start_ros_config(self, data_config):
+    def start_ros_config(self, data_config):
         """
         This function is called after loading the config file
         This start the ROS config

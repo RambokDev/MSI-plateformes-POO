@@ -9,7 +9,7 @@ import sys
 import os
 from numpy import size
 
-from platform.Platform import Platform
+from src.platform.Platform import Platform
 
 
 class Ui(QtWidgets.QMainWindow, Platform):
@@ -17,6 +17,8 @@ class Ui(QtWidgets.QMainWindow, Platform):
         super(Ui, self).__init__()
         uic.loadUi(f'{os.getcwd()}/ihm_tests/ui/main.ui', self)
         self.config_button.clicked.connect(self.getfiles)
+        self.start_stop_connexion.clicked.connect(self.robot_connexion)
+
         self.platform = Platform()
         self.showMaximized()
         self.show()

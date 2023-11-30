@@ -50,6 +50,11 @@ class RobotUR(RobotUR_ROS):
         else:
             raise ValueError("Unknown Trajectory.")
 
+    def excute_recipe(self, params, args):
+        if params.name == "pickup":
+            print(args)
+            return True, "ok"
+
     def cartesian_trajectory(self, command, move, tool_position):
         self.switch_controler_robot("pose_based_cartesian_traj_controller")
         if command == 'initial_position':

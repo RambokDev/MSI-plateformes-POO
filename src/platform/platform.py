@@ -4,6 +4,7 @@ import time
 
 from src.platform.devices.generic.device import Device
 from src.platform.robot.generic.robot import Robot
+from src.platform.robot.specific.ur.commands.recipe import Recipe
 from src.platform.robot.specific.ur.commands.trajectory import Trajectory
 from src.platform.utils import deep_get
 
@@ -16,6 +17,7 @@ class Platform:
         self.robot = None
         self.devices = []
         self.trajectories = []
+        self.recipes = []
         self.initialisation()
 
     def initialisation(self):
@@ -31,7 +33,7 @@ class Platform:
             config = deep_get(data_config, ['platform', 'robot'], None)
             trajectories = deep_get(data_config, ["project", "trajectories"], [])
             devices = deep_get(data_config, ['platform', 'devices'], [])
-
+            recipes = deep_get(data_config, ["project", "recipes"], [])
             robot_type = config['type']
 
             for device in devices:
@@ -54,7 +56,11 @@ class Platform:
                     trajectory = Trajectory(name, trajectory_type, coord, move, tool_position)
                     self.trajectories.append(trajectory)
 
-
+            for recipe in recipes:
+                name = recipe.get("name", None)
+                if isinstance(name, str):
+                    recipe = Recipe(name)
+                    self.recipes.append(recipe)
 
 
         except ValueError as e:

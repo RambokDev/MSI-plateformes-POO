@@ -47,6 +47,10 @@ class Robot(RobotUR, RobotFanuc):
             success, message = RobotUR.go_to(self, traj)
             return success, message
 
+    def execute_recipe(self, params, args):
+        if self.type == 'ur':
+            success, message = RobotUR.excute_recipe(self, params, args)
+            return success, message
 
     def connexion(self):
         """This function allowed you to established the robot connexion

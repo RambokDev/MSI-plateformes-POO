@@ -22,6 +22,14 @@
     ]
   },
   "project": {
+    "recipes": [
+      {
+        "name": "pickup"
+      },
+      {
+        "name": "angle"
+      }
+    ],
     "trajectories": [
       {
         "name": "initial_position",

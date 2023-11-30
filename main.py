@@ -120,6 +120,26 @@ class Ui(QMainWindow):
         print(ratio, W, H, width, height)
         return ratio, width, height
 
+    def getPos(self, event):
+        """
+        This function compute the mouse position and convert the image x,y in camera coordinates
+        :param event: the mouse event
+        """
+        x = event.pos().x()
+        y = event.pos().y()
+        ratio, width, height = self.compute_ratio(1)
+        print(ratio)
+        print("coordinates in IHM picture: ", x, y)
+        realX = round(x / ratio)
+        realY = round(y / ratio)
+        print("coordinates in Real : ", realX, realY)
+
+        # START THE RECIPE FOR THE BOX
+        pickup = next((obj for obj in self.platform.recipes if obj.name == "pickup"), None)
+        print(pickup.name)
+        success, message = self.platform.robot.execute_recipe(pickup, [realX, realY])
+        print(success, message)
+
 
 def main():
     app = QtWidgets.QApplication(sys.argv)

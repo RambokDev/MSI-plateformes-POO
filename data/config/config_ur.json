@@ -9,7 +9,7 @@
     "devices": [
       {
         "name": "venturi",
-        "pin": 3
+        "pin": 0
       },
       {
         "name": "trigger_cam_angle",
@@ -22,7 +22,7 @@
     ]
   },
   "project": {
-    "points": [
+    "trajectories": [
       {
         "name": "initial_position",
         "data": {
@@ -40,7 +40,7 @@
         "states": "3"
       },
       {
-        "name": "bac",
+        "name": "bin",
         "data": {
           "trajectory_type": "cartesian",
           "coord": [

@@ -9,9 +9,8 @@ from src.platform.utils import deep_get
 
 class Robot(RobotUR, RobotFanuc):
 
-    def __init__(self, config: dict, points):
+    def __init__(self, config: dict):
 
-        self.points = points
         self.name = config.get("name", None)
         self.type = config.get("type", None)
         self.ip = config.get("ip", None)
@@ -24,7 +23,6 @@ class Robot(RobotUR, RobotFanuc):
         # Provisoire
         if self.type == "fanuc":
             raise NotImplemented
-
         self.start_ros_config()
 
         super().__init__()
@@ -44,18 +42,11 @@ class Robot(RobotUR, RobotFanuc):
         time.sleep(2)
         return True
 
-    def articular_trajectory(self, command):
+    def go_to(self, traj):
         if self.type == "ur":
-            success, message = RobotUR.articular_trajectory(self, command)
+            success, message = RobotUR.go_to(self, traj)
             return success, message
 
-    def go_to_init(self):
-        if self.type == "ur":
-            point = next((x for x in self.points if x['name'] == "initial_position"), None)
-            coord = deep_get(point, ["data", "coord"], None)
-            success, message = self.articular_trajectory(coord)
-            print(success, message)
-            return success, message
 
     def connexion(self):
         """This function allowed you to established the robot connexion

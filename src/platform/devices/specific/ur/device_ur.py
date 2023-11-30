@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import rospy
 from ur_msgs.srv import SetIO
-
+import time
 
 
 class DeviceUR:
@@ -18,8 +18,8 @@ class DeviceUR:
     def impulse_pin_state_ur(self,pin: int, time: float):
         print("hard")
         set_io_interface = rospy.ServiceProxy('/ur_hardware_interface/set_io', SetIO)
-        set_io_interface(1, pin, 1)
+        set_io_interface(1, pin, True)
         rospy.sleep(time)
-        set_io_interface(1, pin, 0)
+        set_io_interface(1, pin, False)
 
 

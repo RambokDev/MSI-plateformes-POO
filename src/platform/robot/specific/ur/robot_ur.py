@@ -38,9 +38,20 @@ class RobotUR(RobotUR_ROS):
             print("Service did not process request: " + str(exc))
             return False, "Error"
 
+    def go_to(self, trajectories):
+
+        if trajectories.kind == "cartesian":
+            success, message = self.cartesian_trajectory(trajectories.coord, trajectories.move,
+                                                         trajectories.tool_position)
+            return success, message
+        elif trajectories.kind == "articular":
+            success, message = self.articular_trajectory(trajectories.coord)
+            return success, message
+        else:
+            raise ValueError("Unknown Trajectory.")
+
     def cartesian_trajectory(self, command, move, tool_position):
         self.switch_controler_robot("pose_based_cartesian_traj_controller")
-
         if command == 'initial_position':
             duration = 5
             success, message = self.go_to_initial_position(duration)
@@ -68,10 +79,6 @@ class RobotUR(RobotUR_ROS):
                         tool_position
                     ))
                     return success, message
-
-
-
-
 
     def articular_trajectory(self, command):
         print(type(command))

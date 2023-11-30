@@ -17,7 +17,7 @@ class Platform:
         self.robot = None
         self.devices = []
 
-        self.points = []
+        # self.points = []
 
         self.initialisation()
 
@@ -32,17 +32,21 @@ class Platform:
                 data_config = json.load(f)
 
             config = deep_get(data_config, ['platform', 'robot'], None)
-            self.robot = Robot(config)
+            points = deep_get(data_config, ["project", "points"], [])
+            devices = deep_get(data_config, ['platform', 'devices'], [])
+            robot_type = config['type']
 
-            self.points = deep_get(data_config, ["project", "points"], [])
-
-            for device in data_config.get("devices", []):
+            for device in devices:
                 name = device.get("name", None)
                 pin = device.get("pin", None)
 
+
                 if isinstance(name, str) and isinstance(pin, int):
-                    device = Device(name, pin)
+                    device = Device(name, pin,robot_type)
                     self.devices.append(device)
+
+            self.robot = Robot(config, points)
+
 
         except ValueError as e:
             return False, "Error loading config file: {}".format(e)

@@ -8,15 +8,15 @@
     },
     "devices": [
       {
-        "name": "mon device 1",
+        "name": "venturi",
         "pin": 3
       },
       {
-        "name": "mon device 2",
+        "name": "trigger_cam_angle",
         "pin": 4
       },
       {
-        "name": "mon device 3",
+        "name": "trigger_cam_bac",
         "pin": 5
       }
     ]

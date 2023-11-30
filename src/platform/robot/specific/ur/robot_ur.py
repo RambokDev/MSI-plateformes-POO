@@ -36,7 +36,7 @@ class RobotUR(RobotUR_ROS):
             return resp.success, resp.message
         except rospy.ServiceException as exc:
             print("Service did not process request: " + str(exc))
-            return False, "Error", None
+            return False, "Error"
 
     def cartesian_trajectory(self, command, move, tool_position):
         self.switch_controler_robot("pose_based_cartesian_traj_controller")
@@ -68,6 +68,10 @@ class RobotUR(RobotUR_ROS):
                         tool_position
                     ))
                     return success, message
+
+
+
+
 
     def articular_trajectory(self, command):
         print(type(command))

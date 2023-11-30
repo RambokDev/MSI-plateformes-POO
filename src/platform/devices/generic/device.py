@@ -1,20 +1,22 @@
-class Device:
-    def __init__(self, name, pin):
-        super().__init__()
+#!/usr/bin/python3
+from src.platform.devices.specific.ur.device_ur import DeviceUR
 
+
+class Device(DeviceUR):
+    def __init__(self, name, pin,robot_type):
+        super().__init__()
         self.name = name
         self.pin = pin
-
-        self.robot_type = None
+        self.robot_type = robot_type
 
     def set_pin_state(self, pin, state):
         if self.robot_type == 'ur':
-            set_pin_state_ur(pin, state)
+            self.set_pin_state_ur(pin, state)
         elif self.robot_type == 'fanuc':
             raise NotImplemented
 
-    def inpulse_pin_state(self, pin, duration):
+    def inpulse_pin_state(self, duration):
         if self.robot_type == 'ur':
-            impulse_pin_state_ur(pin, duration)
+            self.impulse_pin_state_ur(self.pin, duration)
         elif self.robot_type == 'fanuc':
             raise NotImplemented

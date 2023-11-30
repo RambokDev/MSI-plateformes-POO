@@ -4,12 +4,14 @@ import roslaunch
 
 from src.platform.robot.specific.fanuc.robot_fanuc import RobotFanuc
 from src.platform.robot.specific.ur.robot_ur import RobotUR
+from src.platform.utils import deep_get
 
 
 class Robot(RobotUR, RobotFanuc):
 
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, points):
 
+        self.points = points
         self.name = config.get("name", None)
         self.type = config.get("type", None)
         self.ip = config.get("ip", None)
@@ -45,6 +47,14 @@ class Robot(RobotUR, RobotFanuc):
     def articular_trajectory(self, command):
         if self.type == "ur":
             success, message = RobotUR.articular_trajectory(self, command)
+            return success, message
+
+    def go_to_init(self):
+        if self.type == "ur":
+            point = next((x for x in self.points if x['name'] == "initial_position"), None)
+            coord = deep_get(point, ["data", "coord"], None)
+            success, message = self.articular_trajectory(coord)
+            print(success, message)
             return success, message
 
     def connexion(self):

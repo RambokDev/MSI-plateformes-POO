@@ -22,6 +22,7 @@ class Ui(QMainWindow):
 
         self.config_button.clicked.connect(self.load_conf_file)
         self.start_stop_connexion.clicked.connect(self.connect_robot)
+        self.venturi.clicked.connect(self.venturi_state)
         self.init.clicked.connect(self.go_to_init)
 
         self.showMaximized()
@@ -39,15 +40,19 @@ class Ui(QMainWindow):
         return success, message
 
     def go_to_init(self):
-        point = next((x for x in self.platform.points if x['name'] == "initial_position"), None)
-        coord = deep_get(point, ["data", "coord"], None)
-        success, message = self.platform.robot.articular_trajectory(coord)
-        print(success, message)
+        success, message = self.platform.robot.go_to_init()
+        # point = next((x for x in self.platform.points if x['name'] == "initial_position"), None)
+        # coord = deep_get(point, ["data", "coord"], None)
+        # success, message = self.platform.robot.articular_trajectory(coord)
+        # print(success, message)
 
-        point = next((x for x in self.platform.points if x['name'] == "camera_angle"), None)
-        coord = deep_get(point, ["data", "coord"], None)
-        success, message = self.platform.robot.cartesian_trajectory(coord, None, 'horizontal')
-        print(success, message)
+    def go_to_camera(self):
+        print('i am going to the camera ')
+
+    def venturi_state(self):
+        print("i am changing the venturi state")
+        venturi = next((obj for obj in self.platform.devices if obj.name == 'venturi'), None)
+        venturi.inpulse_pin_state(5)
 
 
 def main():

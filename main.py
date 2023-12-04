@@ -69,7 +69,7 @@ class Ui(QMainWindow):
         This function is called in order to display the image in angle tab
         """
         print("=====Display image Angle =====")
-        img_name_angle = camera_basler(0)
+        img_name_angle = camera_basler(0, self.platform)
         self.image_angle.setFixedSize(1385, 923)
         ratio, width, height = self.compute_ratio(0)
         image = cv2.imread(img_name_angle)
@@ -86,7 +86,7 @@ class Ui(QMainWindow):
         This function is called in order to display the image in pickup tab
         """
         print("=====Display image =====")
-        img_name = camera_basler(1)
+        img_name = camera_basler(1, self.platform)
         self.filename = img_name
         self.image.setFixedSize(1385, 923)
         ratio, width, height = self.compute_ratio(1)
@@ -136,8 +136,7 @@ class Ui(QMainWindow):
 
         # START THE RECIPE FOR THE BOX
         pickup = next((obj for obj in self.platform.recipes if obj.name == "pickup"), None)
-        print(pickup.name)
-        success, message = self.platform.robot.execute_recipe(pickup, [realX, realY])
+        success, message = self.platform.robot.execute_recipe(pickup, [(realX, realY)])
         print(success, message)
 
 

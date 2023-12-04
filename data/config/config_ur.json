@@ -18,19 +18,56 @@
       {
         "name": "trigger_cam_bac",
         "pin": 5
+      },
+      {
+        "name": "contact_sensor",
+        "pin": 4
       }
     ]
   },
   "project": {
     "recipes": [
       {
-        "name": "pickup"
+        "name": "pickup",
+        "trajectories": [
+          {
+            "name": "initial_position"
+          },
+          {
+            "name": "top_bin"
+          },
+          {
+            "name": "down_bin"
+          },
+          {
+            "name": "camera_angle"
+          }
+        ]
       },
       {
         "name": "angle"
       }
     ],
     "trajectories": [
+      {
+        "name": "top_bin",
+        "data": {
+          "trajectory_type": "cartesian",
+          "coord": []
+        },
+        "type": "combobox",
+        "isVisible": false
+      },
+      {
+        "name": "down_bin",
+        "data": {
+          "trajectory_type": "cartesian",
+          "coord": [],
+          "move": "relative"
+        },
+        "type": "combobox",
+        "isVisible": false
+      },
       {
         "name": "initial_position",
         "data": {
@@ -45,7 +82,7 @@
           ]
         },
         "type": "combobox",
-        "states": "3"
+        "isVisible": true
       },
       {
         "name": "bin",
@@ -58,7 +95,7 @@
           ]
         },
         "type": "combobox",
-        "states": "3"
+        "isVisible": true
       },
       {
         "name": "camera_angle",
@@ -72,7 +109,7 @@
           "tool_position": "horizontal"
         },
         "type": "combobox",
-        "states": "3"
+        "isVisible": true
       }
     ],
     "devices": [

@@ -7,7 +7,7 @@ from pypylon import pylon
 ON, OFF = 1, 0
 
 
-def camera_basler(type_camera):
+def camera_basler(type_camera, platform):
     """
     This function is called for the camera Basler connexion
     :param  type_camera : 0 angle Camera , 1 pickup Camera
@@ -32,9 +32,11 @@ def camera_basler(type_camera):
     converter.OutputPixelFormat = pylon.PixelType_BGR8packed
     converter.OutputBitAlignment = pylon.OutputBitAlignment_MsbAligned
     # set_pin_state("ur", 5, True)
+    impulse = next((obj for obj in platform.devices if obj.name == "trigger_cam_bac"), None)
+    impulse.inpulse_pin_state(0.5)
 
-    if type_camera == 0:
-        time.sleep(2)
+    # if type_camera == 0:
+    #     time.sleep(2)
 
     if camera.IsGrabbing():
         grab = camera.RetrieveResult(5000, pylon.TimeoutHandling_ThrowException)
@@ -47,7 +49,6 @@ def camera_basler(type_camera):
 
             return filename
         camera.Close()
-
 
 
 if __name__ == '__main__':

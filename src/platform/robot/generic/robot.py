@@ -49,7 +49,7 @@ class Robot(RobotUR, RobotFanuc):
 
     def execute_recipe(self, params, args):
         if self.type == 'ur':
-            success, message = RobotUR.excute_recipe(self, params, args)
+            success, message = RobotUR.execute_recipe(self, params, args)
             return success, message
 
     def connexion(self):

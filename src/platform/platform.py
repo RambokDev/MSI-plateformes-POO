@@ -58,8 +58,15 @@ class Platform:
 
             for recipe in recipes:
                 name = recipe.get("name", None)
-                if isinstance(name, str):
-                    recipe = Recipe(name)
+                trajectories_recipe_config = recipe.get("trajectories", None)
+                recipe_trajectories = []
+                if isinstance(name, str) and isinstance(trajectories_recipe_config, list):
+                    for trajectory in trajectories_recipe_config:
+                        name_trajectory = trajectory.get('name', None)
+                        print(name_trajectory)
+                        trajectory = next((x for x in self.trajectories if x.name == name_trajectory), None)
+                        recipe_trajectories.append(trajectory)
+                    recipe = Recipe(name, recipe_trajectories)
                     self.recipes.append(recipe)
 
 

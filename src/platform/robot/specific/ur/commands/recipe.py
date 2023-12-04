@@ -2,8 +2,7 @@
 
 
 class Recipe:
-    def __init__(self, name):
+    def __init__(self, name, trajectories):
         super().__init__()
         self.name = name
-        self.x = None
-        self.y = None
+        self.trajectories = trajectories

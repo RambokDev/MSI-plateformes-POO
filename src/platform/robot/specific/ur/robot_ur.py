@@ -1,12 +1,15 @@
 #!/usr/bin/python3
+import threading
 import time
-
+from ur_msgs.msg import IOStates
 import geometry_msgs.msg as geometry_msgs
 import rospy
 from ur_dashboard_msgs.srv import GetRobotMode
 from std_srvs.srv import Trigger
 
+from src.platform.robot.specific.ur.commands.compute_trajectory import compute_trajectory, formatting_commands
 from src.platform.robot.specific.ur.commands.robot_ur_ros import RobotUR_ROS
+from src.platform.robot.specific.ur.commands.trajectory import Trajectory
 
 
 class RobotUR(RobotUR_ROS):
@@ -50,10 +53,64 @@ class RobotUR(RobotUR_ROS):
         else:
             raise ValueError("Unknown Trajectory.")
 
-    def excute_recipe(self, params, args):
+    def execute_recipe(self, params, args):
+
         if params.name == "pickup":
-            print(args)
+            trajectory_camera = next((x for x in params.trajectories if x.name == "camera_angle"), None)
+            contact_sensor = self.contact_sensor(trajectory_camera)
+            trajectories = params.trajectories
+            Xreal, Yreal = args[0]
+            robot_command, vector = self.compute_traj(Xreal, Yreal)
+            print(robot_command, vector)
+            for trajectory in trajectories:
+                print(trajectory.name)
+                if trajectory.name == "top_bin":
+                    trajectory.coord = robot_command
+                elif trajectory.name == "down_bin":
+                    trajectory.coord = vector
+                print(trajectory.coord)
+                success, message = self.go_to(trajectory)
+                if contact_sensor == 1:
+                    return True, "Go to Camera"
+                if not success:
+                    return success, message
+
             return True, "ok"
+
+    def compute_traj(self, Xreal, Yreal):
+        start_pt, vect = compute_trajectory(Xreal, Yreal, 40)
+        robot_command, vector = formatting_commands(start_pt, vect)
+        return robot_command, vector
+
+    def get_state_information_ur(self):
+        """
+        This function is create in order to get the contact
+        """
+        msg = rospy.wait_for_message('ur_hardware_interface/io_states', IOStates)
+        return msg.digital_in_states[7].state
+
+    def thread_function_contact_sensor(self, trajectory, sensor_state):
+        print("Thread contact_sensor is running")
+        sensor_state = 0
+        while True:
+            msg = self.get_state_information_ur()
+            if msg is True:
+                self.go_to(trajectory)
+                print(msg)
+                sensor_state = 1
+                break
+
+        return sensor_state
+
+    def contact_sensor(self, trajectory):
+        """
+        This function is main test function
+        """
+        sensor_state = 0
+        contact_sensor_thread = threading.Thread(target=self.thread_function_contact_sensor,
+                                                 args=(trajectory, sensor_state))
+        contact_sensor_thread.start()
+        return sensor_state
 
     def cartesian_trajectory(self, command, move, tool_position):
         self.switch_controler_robot("pose_based_cartesian_traj_controller")

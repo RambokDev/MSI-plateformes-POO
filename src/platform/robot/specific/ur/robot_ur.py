@@ -1,15 +1,15 @@
 #!/usr/bin/python3
 import threading
 import time
-from ur_msgs.msg import IOStates
 import geometry_msgs.msg as geometry_msgs
 import rospy
 from ur_dashboard_msgs.srv import GetRobotMode
 from std_srvs.srv import Trigger
-
+from ur_msgs.srv import SetSpeedSliderFraction, SetSpeedSliderFractionRequest, SetSpeedSliderFractionResponse
 from src.platform.robot.specific.ur.commands.compute_trajectory import compute_trajectory, formatting_commands
 from src.platform.robot.specific.ur.commands.robot_ur_ros import RobotUR_ROS
-from src.platform.robot.specific.ur.commands.trajectory import Trajectory
+from std_srvs.srv import Trigger, TriggerRequest
+from sensor_msgs.msg import JointState
 
 
 class RobotUR(RobotUR_ROS):
@@ -56,9 +56,14 @@ class RobotUR(RobotUR_ROS):
     def execute_recipe(self, params, args):
 
         if params.name == "pickup":
-            trajectory_camera = next((x for x in params.trajectories if x.name == "camera_angle"), None)
-            contact_sensor = self.contact_sensor(trajectory_camera)
             trajectories = params.trajectories
+            devices = params.devices
+            trajectory_camera = next((x for x in trajectories if x.name == "camera_angle"), None)
+            device_venturi = next((x for x in devices if x.name == "venturi"), None)
+            device_contact_sensor = next((x for x in devices if x.name == "contact_sensor"), None)
+
+            contact_sensor = self.contact_sensor(trajectory_camera, device_contact_sensor)
+
             Xreal, Yreal = args[0]
             robot_command, vector = self.compute_traj(Xreal, Yreal)
             print(robot_command, vector)
@@ -67,6 +72,7 @@ class RobotUR(RobotUR_ROS):
                 if trajectory.name == "top_bin":
                     trajectory.coord = robot_command
                 elif trajectory.name == "down_bin":
+                    device_venturi.toggle_pin_state()
                     trajectory.coord = vector
                 print(trajectory.coord)
                 success, message = self.go_to(trajectory)
@@ -82,18 +88,12 @@ class RobotUR(RobotUR_ROS):
         robot_command, vector = formatting_commands(start_pt, vect)
         return robot_command, vector
 
-    def get_state_information_ur(self):
-        """
-        This function is create in order to get the contact
-        """
-        msg = rospy.wait_for_message('ur_hardware_interface/io_states', IOStates)
-        return msg.digital_in_states[7].state
-
-    def thread_function_contact_sensor(self, trajectory, sensor_state):
+    def thread_function_contact_sensor(self, trajectory, device, sensor_state):
         print("Thread contact_sensor is running")
         sensor_state = 0
         while True:
-            msg = self.get_state_information_ur()
+            print(device.name)
+            msg = device.get_state_information()
             if msg is True:
                 self.go_to(trajectory)
                 print(msg)
@@ -102,13 +102,13 @@ class RobotUR(RobotUR_ROS):
 
         return sensor_state
 
-    def contact_sensor(self, trajectory):
+    def contact_sensor(self, trajectory, device):
         """
         This function is main test function
         """
         sensor_state = 0
         contact_sensor_thread = threading.Thread(target=self.thread_function_contact_sensor,
-                                                 args=(trajectory, sensor_state))
+                                                 args=(trajectory, device, sensor_state))
         contact_sensor_thread.start()
         return sensor_state
 
@@ -197,6 +197,42 @@ class RobotUR(RobotUR_ROS):
         except rospy.ServiceException as exc:
             print("Service did not process request: " + str(exc))
             return False, "Error"
+
+    def set_speed(self, speed: int):
+        """
+        Change de speed slider of the ur Dashboard
+        Example : 0.1
+        @param: speed       An int that represent the speed in porcent
+        """
+        rospy.wait_for_service('/ur_hardware_interface/set_speed_slider')
+        robot_speed_state = rospy.ServiceProxy('/ur_hardware_interface/set_speed_slider', SetSpeedSliderFraction)
+
+        try:
+            resp = robot_speed_state(speed)
+            return resp.success
+        except rospy.ServiceException as exc:
+            print("Service did not process request: " + str(exc))
+            return False
+
+    def get_joint_positions(self):
+        try:
+            # Wait for a message on the specified topic
+            msg = rospy.wait_for_message("/joint_states", JointState,
+                                         timeout=5.0)  # Adjust timeout as needed
+
+            # Access joint positions from the received message
+            joint_positions = msg.position
+            # base = 2
+            # Epaule = 1
+            # coude = 0
+            # P1 = 3
+            # P2 = 4
+            # P3 = 5
+            return joint_positions
+
+        except rospy.ROSException as e:
+            rospy.logerr(f"Failed to get joint positions from topic /ur_hardware_interface/get_joint_states: {e}")
+            return None
 
 
 if __name__ == '__main__':

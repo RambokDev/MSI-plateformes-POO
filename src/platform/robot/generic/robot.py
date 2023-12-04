@@ -1,10 +1,8 @@
 #!/usr/bin/python3
 import time
 import roslaunch
-
 from src.platform.robot.specific.fanuc.robot_fanuc import RobotFanuc
 from src.platform.robot.specific.ur.robot_ur import RobotUR
-from src.platform.utils import deep_get
 
 
 class Robot(RobotUR, RobotFanuc):
@@ -81,6 +79,7 @@ class Robot(RobotUR, RobotFanuc):
                             if success:
                                 print("=========You are actually connected===========")
                                 self.connected = not self.connected
+                                self.set_speed(1)
                                 return success, message
                             else:
                                 return success, message
@@ -107,6 +106,22 @@ class Robot(RobotUR, RobotFanuc):
 
                 else:
                     return success, message
+
+    def set_speed(self, speed: int):
+        print("Robot speed")
+        if self.type == "ur":
+            success = RobotUR.set_speed(self, speed)
+            return success
+
+    def move_terminal_wrist(self, angle):
+        if self.type == "ur":
+            print(angle)
+
+    def get_joint_positions(self):
+        if self.type == "ur":
+            position = RobotUR.get_joint_positions(self)
+            print(position)
+            return position
 
 
 if __name__ == '__main__':

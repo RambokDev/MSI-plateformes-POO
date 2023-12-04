@@ -202,6 +202,8 @@ class RobotUR_ROS(object):
     def switch_controler_robot(self, target):
         self._switch_controller(target)
 
+
+
     def send_joint_trajectory(self, position):
         action_client = SimpleActionClient("/pos_joint_traj_controller/follow_joint_trajectory",
                                            FollowJointTrajectoryAction)

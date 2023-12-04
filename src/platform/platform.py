@@ -59,14 +59,20 @@ class Platform:
             for recipe in recipes:
                 name = recipe.get("name", None)
                 trajectories_recipe_config = recipe.get("trajectories", None)
+                devices_recipe_config = recipe.get('devices', None)
                 recipe_trajectories = []
-                if isinstance(name, str) and isinstance(trajectories_recipe_config, list):
+                recipe_devices = []
+                if isinstance(name, str) and isinstance(trajectories_recipe_config, list) and isinstance(
+                        devices_recipe_config, list):
                     for trajectory in trajectories_recipe_config:
                         name_trajectory = trajectory.get('name', None)
-                        print(name_trajectory)
                         trajectory = next((x for x in self.trajectories if x.name == name_trajectory), None)
                         recipe_trajectories.append(trajectory)
-                    recipe = Recipe(name, recipe_trajectories)
+                    for device in devices_recipe_config:
+                        name_device = device.get('name', None)
+                        device = next((x for x in self.devices if x.name == name_device), None)
+                        recipe_devices.append(device)
+                    recipe = Recipe(name, recipe_trajectories, recipe_devices)
                     self.recipes.append(recipe)
 
 

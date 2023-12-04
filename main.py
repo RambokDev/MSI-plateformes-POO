@@ -21,6 +21,9 @@ class Ui(QMainWindow):
         self.platform = None
         self.config_button.clicked.connect(self.load_conf_file)
         self.start_stop_connexion.clicked.connect(self.connect_robot)
+        self.speed_slider.valueChanged.connect(self.move_slider_speed)
+        self.wrist_angle.valueChanged.connect(self.move_slider_angle)
+        self.angle_test.clicked.connect(self.move_slider_angle)
         self.venturi.clicked.connect(lambda x: self.toogle_pin('venturi'))
         self.bin_lights.clicked.connect(lambda x: self.impulse_pin('trigger_cam_bac'))
         self.camera_lights.clicked.connect(lambda x: self.impulse_pin('trigger_cam_angle'))
@@ -42,6 +45,17 @@ class Ui(QMainWindow):
             filename = dlg.selectedFiles()
             self.platform = Platform(filename[0])
             self.filename_config = filename[0]
+
+    def move_slider_speed(self):
+        speed = self.speed_slider.value()
+        print(speed)
+        success = self.platform.robot.set_speed(speed/100)
+        print(success)
+
+    def move_slider_angle(self):
+        # speed = self.wrist_angle.value()
+        position = self.platform.robot.get_joint_positions()
+        print(position)
 
     def connect_robot(self):
         success, message = self.platform.robot.connexion()

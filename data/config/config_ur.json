@@ -21,7 +21,7 @@
       },
       {
         "name": "contact_sensor",
-        "pin": 4
+        "pin": 7
       }
     ]
   },
@@ -41,6 +41,14 @@
           },
           {
             "name": "camera_angle"
+          }
+        ],
+        "devices": [
+          {
+            "name": "venturi"
+          },
+          {
+            "name": "contact_sensor"
           }
         ]
       },
